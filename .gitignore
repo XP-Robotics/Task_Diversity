@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+
+# Pipeline outputs — reports are artifacts, not source
+qa_out/
+qa_out*/
+*_qa_out/
+schema_report.html
+schema_report.json
+diversity_report.html
+diversity_report.json
+missing_parameters*.json
+*.xlsx
+
+# Local scratch
+*.log
+.DS_Store

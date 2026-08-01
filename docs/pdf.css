@@ -1,0 +1,215 @@
+/* Print stylesheet for the technical documentation PDF.
+   Rendered via: pandoc DOCUMENTATION.md -> HTML, then Chrome headless -> PDF.
+   Monochrome; hierarchy carried by weight, rule and space rather than colour. */
+
+@page {
+  size: A4;
+  margin: 20mm 18mm 18mm 18mm;
+}
+
+:root {
+  --ink:   #111111;
+  --ink-2: #3d3d3d;
+  --ink-3: #6b6b6b;
+  --rule:  #cfcfcf;
+  --hair:  #e6e6e6;
+  --fill:  #f6f6f6;
+  --serif: "Charter", "Palatino Linotype", Palatino, Georgia, "Times New Roman", serif;
+  --sans:  "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --mono:  "SF Mono", Menlo, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  font-family: var(--serif);
+  font-size: 9.6pt;
+  line-height: 1.5;
+  color: var(--ink);
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------------------------------------------------------------- headings */
+
+h1, h2, h3, h4 {
+  font-family: var(--sans);
+  color: var(--ink);
+  line-height: 1.25;
+  margin: 0 0 .45em;
+  break-after: avoid-page;
+  page-break-after: avoid;
+}
+
+/* The document title block: first h1 only. */
+h1:first-of-type {
+  font-size: 26pt;
+  font-weight: 700;
+  letter-spacing: -.02em;
+  margin-top: 22mm;
+  padding: 0;
+  border: 0;
+}
+h1:first-of-type + h2 {
+  font-size: 13pt;
+  font-weight: 400;
+  color: var(--ink-3);
+  letter-spacing: .01em;
+  margin: -.2em 0 1.4em;
+  padding: 0;
+  border: 0;
+  counter-reset: none;
+}
+
+h1 {
+  font-size: 17pt;
+  font-weight: 700;
+  letter-spacing: -.01em;
+  margin-top: 0;
+  padding-bottom: .32em;
+  border-bottom: 1.4pt solid var(--ink);
+  break-before: page;
+  page-break-before: always;
+}
+h1:first-of-type { break-before: avoid-page; page-break-before: avoid; }
+
+h2 {
+  font-size: 12pt;
+  font-weight: 700;
+  margin-top: 1.7em;
+  padding-bottom: .2em;
+  border-bottom: .5pt solid var(--rule);
+}
+
+h3 {
+  font-size: 10.2pt;
+  font-weight: 700;
+  margin-top: 1.35em;
+}
+
+h4 {
+  font-size: 9.6pt;
+  font-weight: 700;
+  color: var(--ink-2);
+  margin-top: 1.1em;
+}
+
+p { margin: 0 0 .68em; orphans: 2; widows: 2; }
+
+strong { font-weight: 700; }
+em { font-style: italic; }
+
+a { color: inherit; text-decoration: none; border-bottom: .4pt solid var(--rule); }
+
+/* ------------------------------------------------------------------- lists */
+
+ul, ol { margin: 0 0 .75em; padding-left: 1.35em; }
+li { margin-bottom: .22em; }
+li > ul, li > ol { margin-top: .22em; margin-bottom: .1em; }
+
+/* ------------------------------------------------------------------ tables */
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: .55em 0 1.05em;
+  font-family: var(--sans);
+  font-size: 8.1pt;
+  line-height: 1.35;
+  break-inside: auto;
+}
+
+thead { display: table-header-group; }
+tr { break-inside: avoid; page-break-inside: avoid; }
+
+th {
+  text-align: left;
+  font-weight: 700;
+  padding: .42em .6em;
+  border-bottom: 1pt solid var(--ink);
+  vertical-align: bottom;
+}
+
+td {
+  padding: .4em .6em;
+  border-bottom: .4pt solid var(--hair);
+  vertical-align: top;
+}
+
+tbody tr:last-child td { border-bottom: .7pt solid var(--rule); }
+
+/* Inline code in a table cell may wrap at the end of a long token, but must not
+   break a short one mid-word -- `word-break: break-word` shrinks the column's
+   min-content width and splits "generic" across two lines. */
+td code, th code {
+  font-size: .95em;
+  word-break: normal;
+  overflow-wrap: break-word;
+}
+
+/* ------------------------------------------------------------------- code */
+
+code {
+  font-family: var(--mono);
+  font-size: .87em;
+  background: var(--fill);
+  padding: .1em .32em;
+  border-radius: 2px;
+  border: .4pt solid var(--hair);
+}
+
+pre {
+  font-family: var(--mono);
+  font-size: 7.7pt;
+  line-height: 1.45;
+  background: var(--fill);
+  border: .5pt solid var(--rule);
+  border-left: 2pt solid var(--ink-3);
+  border-radius: 2px;
+  padding: .7em .85em;
+  margin: .55em 0 1em;
+  overflow: visible;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+pre code {
+  background: none;
+  border: 0;
+  padding: 0;
+  font-size: inherit;
+}
+
+/* -------------------------------------------------------------- blockquote */
+
+blockquote {
+  margin: .7em 0 1em;
+  padding: .55em .9em;
+  background: var(--fill);
+  border-left: 2pt solid var(--ink-3);
+  color: var(--ink-2);
+  font-size: 9.1pt;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+blockquote p:last-child { margin-bottom: 0; }
+
+/* --------------------------------------------------------------------- hr */
+
+hr {
+  border: 0;
+  border-top: .5pt solid var(--rule);
+  margin: 1.5em 0;
+}
+/* The three separator rules before major parts add nothing once h1 has its
+   own rule and page break. */
+hr + h1 { border-top: 0; }
+
+/* ------------------------------------------------------------------ syntax */
+
+.sourceCode { background: none; }
+code span.kw { font-weight: 700; }
+code span.co { color: var(--ink-3); font-style: italic; }
+code span.st, code span.dv, code span.fl { color: var(--ink-2); }
