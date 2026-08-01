@@ -19,3 +19,8 @@ missing_parameters*.json
 # Local scratch
 *.log
 .DS_Store
+
+# Local-only components (not part of this repository)
+schema_pipeline/
+docs/pipeline-flowcharts.html
+docs/Egocentric-Capture-QA-Documentation.pdf

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Render DOCUMENTATION.md to Egocentric-Capture-QA-Documentation.pdf.
+# Render DOCUMENTATION.md to Task-Diversity-QA-Documentation.pdf.
 #
 #   pandoc  DOCUMENTATION.md -> HTML fragment   (no pandoc default CSS)
 #   wrapper adds pdf.css + a cover page
@@ -10,7 +10,7 @@ set -euo pipefail
 
 cd "$(dirname "$0")"
 
-OUT="Egocentric-Capture-QA-Documentation.pdf"
+OUT="Task-Diversity-QA-Documentation.pdf"
 FRAG="$(mktemp -t qadoc-frag-XXXXXX.html)"
 PAGE="$(mktemp -t qadoc-page-XXXXXX.html)"
 trap 'rm -f "$FRAG" "$PAGE"' EXIT
@@ -25,7 +25,7 @@ pandoc DOCUMENTATION.md -f gfm -t html5 -o "$FRAG"
 
 {
   printf '<!doctype html><html lang="en"><head><meta charset="utf-8">'
-  printf '<title>Egocentric Capture QA — Technical Documentation</title><style>'
+  printf '<title>Task Diversity QA — Technical Documentation</title><style>'
   cat pdf.css
   printf '</style></head><body>'
   cat "$FRAG"
