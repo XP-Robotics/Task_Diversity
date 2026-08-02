@@ -18,10 +18,12 @@ DIVERSITY_ALIASES = {
     "operator_id": ["operator-id", "operator_id"],
     "environment_id": ["environment-id", "environment_id"],
     "environment_l1": ["environment_l1", "environment-l1", "environment_category", "l1"],
+    "environment_l2": ["environment_l2", "environment-l2", "facility_type", "venue", "l2"],
+    "environment_l3": ["environment_l3", "environment-l3", "scene", "l3"],
     "task_difficulty": ["task_difficulty", "task-difficulty", "difficulty"],
     "skill_group": ["skill_group", "skill-group"],
     "business_size": ["business_size", "business_type"],
-    "worker_type": ["worker_type", "operator_type"],
+    "worker_type": ["worker_type", "operator_type", "workforce_composition"],
     "human_interaction": ["human_interaction", "interaction"],
     "start_time_unix": ["start_time_unix", "start-time-unix"],
     "end_time_unix": ["end_time_unix", "end-time-unix"],
@@ -42,6 +44,7 @@ DIFFICULTY_SEVERITY = {"easy": 1, "medium": 2, "hard": 3}
 BUSINESS_SIZE_SYNONYMS = {
     "small": "small", "sm": "small", "s": "small",
     "medium": "medium", "med": "medium", "m": "medium",
+    "mediumsizedbusiness": "medium", "mediumbusiness": "medium",
     "large": "large", "lg": "large", "l": "large", "big": "large",
 }
 
@@ -52,7 +55,7 @@ WORKER_TYPE_SYNONYMS = {
     "real": "real", "employee": "real", "internal": "real",
     "realworker": "real", "realemployee": "real",
     "contractor": "contractor", "contract": "contractor", "external": "contractor",
-    "contractworker": "contractor",
+    "contractworker": "contractor", "contractors": "contractor",
 }
 
 # human_interaction truthy / falsy tokens

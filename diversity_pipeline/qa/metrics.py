@@ -120,6 +120,8 @@ class DivRow:
     operator_id: Optional[str]
     environment_id: Optional[str]
     environment_l1: Optional[str]
+    environment_l2: Optional[str]
+    environment_l3: Optional[str]
     difficulty: Optional[str]
     business_size: Optional[str]
     worker_type: Optional[str]
@@ -156,6 +158,8 @@ def build_row(ep: Episode) -> DivRow:
         operator_id=_str_or_none(val("operator_id")),
         environment_id=_str_or_none(val("environment_id")),
         environment_l1=_str_or_none(val("environment_l1")),
+        environment_l2=_str_or_none(val("environment_l2")),
+        environment_l3=_str_or_none(val("environment_l3")),
         difficulty=difficulty,
         business_size=_norm_business_size(val("business_size")),
         worker_type=_norm_worker_type(val("worker_type")),
@@ -497,6 +501,7 @@ def run(episodes: List[Episode], factory_dynamic: bool = False) -> Dict[str, Any
         "stem": r.stem, "hours": round(r.hours, 4), "duration_source": r.duration_source,
         "task_id": r.task_id, "operator_id": r.operator_id,
         "environment_id": r.environment_id, "environment_l1": r.environment_l1,
+        "environment_l2": r.environment_l2, "environment_l3": r.environment_l3,
         "difficulty": r.difficulty, "business_size": r.business_size,
         "worker_type": r.worker_type, "human_interaction": r.human_interaction,
         "warnings": r.warnings,

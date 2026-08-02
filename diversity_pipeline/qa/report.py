@@ -65,7 +65,7 @@ def _hours_by(rows: List[Dict[str, Any]], field: str) -> List[Tuple[str, float]]
 
 
 def _share_chart(title: str, caption: str, pairs: List[Tuple[str, float]],
-                 total: float, noun: str) -> str:
+                 total: float, noun: str, plural_noun: Optional[str] = None) -> str:
     """Share of hours per category, with every category plotted.
 
     A donut while the palette can give each slice its own identity; beyond that
@@ -76,7 +76,8 @@ def _share_chart(title: str, caption: str, pairs: List[Tuple[str, float]],
         return ""
     tbl = H.table([noun, "Hours", "Share"],
                   [[H.esc(lbl), f"{h:.3f}", f"{_pct(h, total):.2f}%"] for lbl, h in pairs])
-    plural = noun + ("s" if len(pairs) != 1 else "")
+    # "Category" -> "Categorys" if the caller does not supply the real plural.
+    plural = noun if len(pairs) == 1 else (plural_noun or noun + "s")
     slices = [(lbl, h, f"{lbl} · {h:.2f}h · {_pct(h, total):.1f}%") for lbl, h in pairs]
     cols = H._colors(len(pairs))
     body = H.donut(slices, center_value=str(len(pairs)), center_label=plural)
@@ -147,6 +148,24 @@ def _composition(result: Dict[str, Any]) -> str:
     rows = result["rows"]
     total = sum(r["hours"] for r in rows) or 0.0
     cards: List[str] = []
+
+    # The environment vocabulary is a three-level hierarchy, and each level
+    # answers a different question -- L1 is the check the report is graded on,
+    # L2 and L3 say whether that category is one venue repeated or genuinely
+    # varied. One pie per level, so a reader sees where the concentration sits.
+    for field_name, title, noun, plural_noun, caption in (
+        ("environment_l1", "Hours by environment L1", "Category", "Categories",
+         "Share of delivery hours per L1 environment category &mdash; the level "
+         "the distinct-count and concentration rules are measured on."),
+        ("environment_l2", "Hours by environment L2", "Facility type", "Facility types",
+         "Share of delivery hours per L2 facility type / venue."),
+        ("environment_l3", "Hours by environment L3", "Scene", "Scenes",
+         "Share of delivery hours per L3 scene &mdash; the finest level, where a "
+         "broad L1 can still turn out to be one repeated setting."),
+    ):
+        levels = _hours_by(rows, field_name)
+        if levels:
+            cards.append(_share_chart(title, caption, levels, total, noun, plural_noun))
 
     sites = [(_env_label(code), h) for code, h in _hours_by(rows, "environment_id")]
     if sites:
