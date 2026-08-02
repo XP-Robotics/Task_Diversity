@@ -55,20 +55,151 @@ minimal containers, analyst laptops) where dependency installation is friction.
 
 ---
 
-## Quick start
+## What the pipeline needs as input
+
+### The unit: one episode = one video + one metadata sidecar
+
+Everything the pipeline reports is an aggregate over **episodes**. An episode is a video
+file paired with a JSON sidecar describing it. Pairing is by *stem* (the filename without
+its extension) **within the same directory** — `clip_004.mp4` pairs with
+`clip_004.meta.json`, and never with a `clip_004.meta.json` sitting in another folder.
+
+Videos are `.mp4` or `.mov` (case-insensitive). Nothing else is treated as a video.
+
+An unpaired file is **never dropped**. A video with no sidecar and a sidecar with no video
+both become episodes carrying a warning, so an ingestion gap shows up in the report instead
+of quietly shrinking the denominator.
+
+### Accepted layouts
+
+**Local directory** — recursion is allowed, flat is normal. Sidecars must end in
+`.meta.json`:
+
+```
+delivery/
+├── clip_001.mp4
+├── clip_001.meta.json
+├── clip_002.mov
+└── clip_002.meta.json
+```
+
+**S3 `folder` layout** (the default, `--s3-layout folder`) — one folder per episode, named
+however you like; the sidecar is `metadata.json` or `<stem>.meta.json`:
+
+```
+s3://bucket/prefix/
+├── episode-0001/
+│   ├── video.mp4
+│   └── metadata.json
+└── episode-0002/
+    ├── video.mp4
+    └── metadata.json
+```
+
+**S3 `paired` layout** (`--s3-layout paired`) — two sibling folders matched by stem:
+
+```
+s3://bucket/prefix/
+├── videos/    clip_001.mp4, clip_002.mp4, …
+└── metadata/  clip_001.json, clip_002.json, …
+```
+
+If your delivery matches none of these — sidecars a level above the media, many clips per
+folder, a metadata array instead of an object — that is what a **source profile** is for
+(see below). Profiles reshape structure; they never invent values.
+
+### The metadata sidecar
+
+A JSON **object** (or something a profile unwraps into one). Nested objects are flattened
+to dotted paths, so `data.metadata.task_id` resolves as `task_id`. Key spelling is
+normalised — `task-id`, `task_id`, `Task_ID` and `taskId` are the same key — and each
+canonical field also accepts these alternates, **first match wins**:
+
+| Canonical field | Also accepted as | Feeds |
+|---|---|---|
+| `task_id` | `task-id` | checks 3, 4, 5 |
+| `operator_id` | `operator-id` | checks 5, 6 |
+| `environment_id` | `environment-id` | checks 4, 5, 6, 7 |
+| `environment_l1` | `environment-l1`, `environment_category`, `l1` | check 1, and the factory-pair rule in check 4 |
+| `environment_l2` | `environment-l2`, `facility_type`, `venue`, `l2` | reported only, never graded |
+| `environment_l3` | `environment-l3`, `scene`, `l3` | reported only, never graded |
+| `task_difficulty` | `task-difficulty`, `difficulty` | checks 2, 3, 4, 5 |
+| `business_size` | `business_type` | check 7 |
+| `worker_type` | `operator_type`, `workforce_composition` | check 8 |
+| `human_interaction` | `interaction` | check 9 |
+| `start_time_unix` / `end_time_unix` | `start-time-unix` / `end-time-unix` | duration fallback |
+
+Values are normalised too, so a delivery's own vocabulary usually just works:
+
+| Field | Accepted values (case- and separator-insensitive) |
+|---|---|
+| `task_difficulty` | `easy` `e` `1` `simple` · `medium` `med` `2` · `hard` `h` `3` `difficult` `skilled` |
+| `business_size` | `small` `sm` `s` · `medium` `med` `m` `mediumsizedbusiness` `mediumbusiness` · `large` `lg` `l` `big` |
+| `worker_type` | `real` `employee` `internal` `realworker` `realemployee` · `contractor` `contract` `external` `contractworker` `contractors` |
+| `human_interaction` | true: `true` `yes` `y` `t` `1` · false: `false` `no` `n` `f` `0` |
+
+An unrecognised value is **not** guessed at — it is left unnormalised and reported. To
+teach the pipeline a new spelling, add one line to the relevant dict in
+`diversity_pipeline/qa/config.py`.
+
+**No field is mandatory.** A missing field costs you the checks that need it, and those
+report `NOT_COMPUTABLE` rather than passing. A delivery with only `task_id`,
+`environment_id` and durations still produces a real report — it just says so about the
+rest.
+
+### Where hours come from
+
+Every limit is measured in hours, so duration is the one input that always matters. Per
+episode, in order:
+
+1. **Measured from the video** with `ffprobe` — for S3 runs this is a range request against
+   a presigned URL, so no download.
+2. **`end_time_unix − start_time_unix`** from the sidecar, when ffprobe is unavailable or
+   the video is unreadable.
+3. **0 hours plus a warning**, when there is neither.
+
+When *both* are available the measurement wins and the two are reconciled: a disagreement
+beyond 1 second **and** 2 % is recorded on that episode, because a sidecar that disagrees
+with its own video is worth knowing about even when the hours are fine.
+
+Each episode records which source it used (`video` · `metadata` · `both` · `none`), and the
+report shows the split — so "1,000 hours" is never an unqualified claim.
+
+---
+
+## Running the pipeline
+
+### A local delivery
 
 ```bash
 cd diversity_pipeline
-
-# local delivery
 python3 run.py /path/to/delivery --out qa_out
-
-# cloud-direct: no download — metadata fetched in parallel,
-# video durations measured remotely via ffprobe range requests
-export AWS_ACCESS_KEY_ID=… AWS_SECRET_ACCESS_KEY=…
-export S3_ENDPOINT=sfo3.digitaloceanspaces.com AWS_REGION=sfo3
-python3 run.py s3://bucket/prefix --profile generic --out qa_out
 ```
+
+That is the whole setup — no virtualenv, no install step.
+
+### An S3 / Spaces delivery (no download)
+
+Credentials come from the environment and are never read from a file in the repo:
+
+```bash
+export AWS_ACCESS_KEY_ID=…
+export AWS_SECRET_ACCESS_KEY=…
+export S3_ENDPOINT=sfo3.digitaloceanspaces.com   # host only, no https://
+export AWS_REGION=sfo3                            # default us-east-1
+export AWS_S3_BUCKET_NAME=my-bucket               # optional: default bucket
+
+cd diversity_pipeline
+python3 run.py s3://my-bucket/prefix --out qa_out
+
+# try it on 50 episodes first — same code path, seconds instead of minutes
+python3 run.py s3://my-bucket/prefix --limit 50 --out qa_out_sample
+```
+
+Metadata is fetched concurrently and durations are probed remotely, so a delivery of tens
+of thousands of episodes is a minutes-scale run, not a download.
+
+### Flags
 
 | Flag | Meaning |
 |---|---|
@@ -79,7 +210,43 @@ python3 run.py s3://bucket/prefix --profile generic --out qa_out
 | `--limit N` | cap episodes ingested (S3 only, natural order) |
 | `--quiet` | terser console output |
 
-Exit codes: `0` all checks clear · `1` any FAIL · `2` usage / ingestion error.
+### Choosing a profile
+
+Start with the default (`generic`). If the report comes back with widespread
+`NOT_COMPUTABLE` or empty groupings, the metadata is shaped differently from what the
+generic reader expects, and a profile is the fix:
+
+| Profile | Use when |
+|---|---|
+| `generic` | the sidecar is already a flat JSON object (default) |
+| `xphi-capture-v1` | `metadata.json` is an array of chunks and the payload is under `data.metadata` |
+| `xphi-episode-v1` | each episode folder carries a rich `episode_metadata.json` alongside a sparser `metadata.json` |
+| `licensed-egocentric-v1` | split `videos/` + `metadata/` layout using `factory_id` / `worker_id` |
+
+### What you get back
+
+```
+qa_out/
+├── diversity_report.html   ← self-contained, open in any browser
+└── diversity_report.json   ← same content, machine-readable
+```
+
+plus a console summary — one line per check, with the offending groups listed under any
+that failed.
+
+Exit codes: `0` all checks clear · `1` any FAIL · `2` usage / ingestion error. So
+`python3 run.py … || echo "delivery rejected"` works in a scheduled job, and CI can gate on
+it directly.
+
+### When something looks wrong
+
+| Symptom | Cause |
+|---|---|
+| `error: no episodes found under …` | the layout does not match — check `--s3-layout`, or that sidecars end in `.meta.json` for a local run |
+| every check `NOT_COMPUTABLE` | metadata parsed but fields unresolved — likely a profile is needed |
+| all hours `0.0` | no ffprobe **and** no `start_time_unix`/`end_time_unix` in the sidecars |
+| hours look nominal, all identical | durations came from declared timestamps, not measurement — check the provenance section of the report |
+| many orphan warnings | videos and sidecars are not in the same folder, or stems disagree |
 
 ---
 
