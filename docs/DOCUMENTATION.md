@@ -99,7 +99,7 @@ sidecar, or a sidecar with no video — is surfaced as an episode carrying a war
 **never dropped**. An orphan is a finding, not an absence.
 
 **4 — Measure; never trust a declaration.** Durations are measured from the video artefact
-wherever possible; metadata timestamps are a claim about it (see §3.3).
+wherever possible; metadata timestamps are a claim about it (see §3.4).
 
 **5 — Thresholds are data, versioned separately from logic.** Every limit lives in
 `config.py`. Tuning a threshold or moving a field's accepted location is a one-line edit
@@ -148,7 +148,27 @@ rather than per-record conformance:
 
 Only `FAIL` sets a non-zero exit code.
 
-## 3.3 Duration reconciliation
+## 3.3 The environment hierarchy
+
+Environment is declared at three levels, and only the first is graded:
+
+| Field | Example | Role |
+|---|---|---|
+| `environment_l1` | `Industrial` | the **category** Check 1 measures concentration and distinct count on |
+| `environment_l2` | `Metal Fabrication` | facility type / venue — reported, never graded |
+| `environment_l3` | `Sheet-Metal Fabrication & Assembly Plant` | scene, the finest level — reported, never graded |
+
+L2 and L3 exist because an L1 category that clears every concentration rule can still be a
+single venue filmed repeatedly, and the L1 numbers alone cannot say so. Both levels are
+resolved through `DIVERSITY_ALIASES` like any other field, carried on `DivRow`, emitted in
+the JSON `rows`, and drawn as one share chart per level (§7.1).
+
+Reported-not-graded is a deliberate asymmetry. Adding a limit on L2 or L3 would mean
+inventing a threshold the delivery contract does not state; showing the distribution costs
+nothing and lets a reader see concentration the graded level hides. `environment_id`
+remains the grouping key for Checks 4–7 — it identifies the *site*, not the category.
+
+## 3.4 Duration reconciliation
 
 Every diversity limit is denominated in hours, so getting duration right is upstream of
 every check. Per episode:
@@ -342,7 +362,8 @@ that describes the shape of the delivery *before* any pass/fail judgement — ev
 derived from the same per-episode rows the checks use:
 
 - Hours by environment level (`environment_l1`, `environment_l2`, `environment_l3` — one
-  chart per level where the delivery declares a hierarchy) and hours by task
+  chart per level the delivery declares, §3.3) and hours by task. L1 is the graded level;
+  L2 and L3 are there to show whether a passing L1 category is one venue repeated
 - Difficulty mix as an ordinal ratio bar measured against the hard floor — ordered
   hard→easy, because the rule is a floor on *hard*
 - Workforce mix as a ratio bar against the real-employee floor
@@ -369,7 +390,8 @@ derived from the same per-episode rows the checks use:
   "rows": [
     { "stem": "…", "hours": 0.2813, "duration_source": "video",
       "task_id": "…", "operator_id": "…", "environment_id": "…",
-      "environment_l1": "…", "difficulty": "medium", "business_size": null,
+      "environment_l1": "…", "environment_l2": "…", "environment_l3": "…",
+      "difficulty": "medium", "business_size": null,
       "worker_type": "real", "human_interaction": false, "warnings": [] }
   ]
 }
@@ -463,3 +485,6 @@ order: the canonical name goes first, fallbacks last.
 | 7 | Business-size caps | `business_size`, `environment_id` |
 | 8 | Workforce mix | `worker_type` |
 | 9 | Human–human interaction | `human_interaction` |
+
+`environment_l2` and `environment_l3` appear in no row of this table on purpose: they are
+read, carried through the JSON `rows` and charted, but no check grades them (§3.3).

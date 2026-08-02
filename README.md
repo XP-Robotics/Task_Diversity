@@ -114,8 +114,12 @@ Each run writes into the output directory:
   operator concentration, episode-length histogram, the environment reference table, and a
   per-episode duration table with provenance.
 - **`diversity_report.json`** — the same content machine-readable; its `rows` array is the
-  complete per-episode basis for every aggregate, so any figure can be recomputed or
-  audited independently.
+  complete per-episode basis for every aggregate — including all three environment levels —
+  so any figure can be recomputed or audited independently.
+
+Only `environment_l1` is graded (check 1). `environment_l2` and `environment_l3` are read
+and charted but never scored: an L1 category can clear every concentration rule and still
+be one venue filmed over and over, and the finer levels are what let a reader see that.
 
 Report artifacts are intentionally **git-ignored** — this repository contains the pipeline,
 not its outputs.
@@ -135,7 +139,10 @@ Credentials are read from the environment and are never hardcoded or committed.
 
 Every threshold is **data, not logic** — limits, the environment vocabulary, spelling
 synonyms and field aliases all live in `diversity_pipeline/qa/config.py`. Tuning a limit is
-a one-line edit that never touches check logic (booklet §8).
+a one-line edit that never touches check logic (booklet §8). Teaching the pipeline a
+spelling a delivery actually uses — `workforce_composition` for `worker_type`,
+`mediumsizedbusiness` for a business size — is the same one-line edit, and it is how a
+field that would otherwise report `NOT_COMPUTABLE` starts being read.
 
 ---
 
