@@ -1,8 +1,12 @@
 # Diversity reports
 
-Generated outputs, checked in deliberately. The rest of the repository ignores
-`qa_out*/` because reports are artifacts rather than source; these two
+Generated HTML reports, checked in deliberately. The rest of the repository
+ignores `qa_out*/` because reports are artifacts rather than source; these two
 deliveries are kept because they are the reference results people cite.
+
+Only the HTML is kept. The machine-readable `diversity_report.json` each run
+also produces — and the per-episode duration CSVs — are not checked in; re-run
+the pipeline to regenerate them.
 
 ## `xphi_mcap_v2/` — `s3://xphi/datasets/` (MCAP delivery)
 
@@ -10,11 +14,11 @@ deliveries are kept because they are the reference results people cite.
 
 | File | What it is |
 |---|---|
-| `diversity_report.json` / `.html` | the pipeline's own output |
-| `diversity_report_enriched.json` / `.html` | the same run with checks 7 and 8 resolved |
+| `diversity_report.html` | the pipeline's own output |
+| `diversity_report_enriched.html` | the same run with checks 7 and 8 resolved |
 | `diversity_report_pro.html` | presentation report, built from the enriched result |
 
-**Read the enriched pair, not the raw pair, for checks 7 and 8.** `worker_type`
+**Read the enriched report, not the raw one, for checks 7 and 8.** `worker_type`
 and `business_size` do not exist inside the MCAP recordings, so the pipeline
 reports both checks `NOT_COMPUTABLE`. They were resolved afterwards by joining
 `s3://xphi/enrichments/episode_metadata_v1.json`, which matched all 9,185
@@ -32,8 +36,7 @@ old-to-new mapping is the only way to reproduce that join.
 
 ## `xphi2/` — the Vultr `xphi2` delivery
 
-Includes per-episode, per-task, per-environment and per-provenance duration
-breakdowns alongside the report.
+`diversity_report.html` plus the presentation report.
 
 ---
 
