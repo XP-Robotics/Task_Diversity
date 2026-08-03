@@ -1,0 +1,24 @@
+l1_category,episodes,with_duration,no_duration,total_minutes,total_hours,share_pct
+Laboratory,2432,2432,0,7261.23,121.0205,11.106
+Scientific,2432,2432,0,7249.40,120.8234,11.088
+Industrial,2002,2002,0,5990.56,99.8426,9.162
+Manufacturing,2001,2001,0,5985.70,99.7616,9.155
+Cottage Component Assembly,1978,1978,0,5904.50,98.4084,9.031
+Gem & Jewelry Workshop,1783,1783,0,5309.87,88.4978,8.121
+Textile Winding / Warping Prep,1160,1160,0,3454.31,57.5718,5.283
+Light Manufacturing,1077,1077,0,3220.72,53.6787,4.926
+Creative Workshops,1029,1029,0,3059.78,50.9964,4.680
+Printing and Design,970,970,0,2885.00,48.0833,4.413
+Construction and Hardware,884,884,0,2612.48,43.5414,3.996
+Factory,764,764,0,2262.88,37.7146,3.461
+Service,552,552,0,1651.32,27.5220,2.526
+Commercial,552,552,0,1651.21,27.5202,2.525
+Craft & Repair,551,551,0,1649.66,27.4944,2.523
+Physical Production,443,443,0,1320.00,22.0000,2.019
+Construction Industry,440,440,0,1311.61,21.8602,2.006
+Administrative,223,223,0,667.52,11.1253,1.021
+Fiber Processing,197,197,0,585.10,9.7516,0.895
+Fabric Manufacturing,195,195,0,580.16,9.6694,0.887
+Warehouse / Dispatch & Packing,182,182,0,537.62,8.9603,0.822
+Repair Services,77,77,0,231.00,3.8500,0.353
+(none),40,0,40,0.00,0.0000,0.000
